@@ -27,10 +27,13 @@ function writeTasks(tasks) {
     fs.writeFileSync(taskFilePath, JSON.stringify(tasks, null, 2));
 }
 
-app.get('/tasks', (req, res) => {
-    const tasks = readTasks();
-    res.json(tasks);
-});
+function validateTask(task) {
+    if (!task.title || !task.description || !task.status) {
+        return false;
+    }
+    return true;
+}
+
 
 app.get('/tasks/:id', (req, res) => {
     const tasks = readTasks();
@@ -41,14 +44,41 @@ app.get('/tasks/:id', (req, res) => {
     res.json(task);
 });
 
+app.get('/tasks', (req, res) => {
+    let tasks = readTasks();
+
+    // Filter tasks based on status
+    if (req.query.status) {
+        tasks = tasks.filter(task => task.status === req.query.status);
+    }
+
+    // Sorting tasks based on title or any other criteria
+    if (req.query.sortBy) {
+        tasks.sort((a, b) => {
+            if (a[req.query.sortBy] < b[req.query.sortBy]) return -1;
+            if (a[req.query.sortBy] > b[req.query.sortBy]) return 1;
+            return 0;
+        });
+    }
+
+    res.json(tasks);
+});
+
+
 app.post('/tasks', (req, res) => {
-    const tasks = readTasks();
+   
     const newTask = {
         id: String(Date.now()), 
         title: req.body.title,
         description: req.body.description,
         status: req.body.status || 'pending'
     };
+
+    if (!validateTask(newTask)) {
+        return res.status(400).json({ error: 'Title, description, and status are required fields' });
+    }
+
+    const tasks = readTasks();
     tasks.push(newTask);
     writeTasks(tasks);
     res.status(201).json(newTask);
@@ -66,6 +96,11 @@ app.put('/tasks/:id', (req, res) => {
         description: req.body.description,
         status: req.body.status || 'pending'
     };
+
+    if (!validateTask(updatedTask)) {
+        return res.status(400).json({ error: 'Title, description, and status are required fields' });
+    }
+
     tasks[taskIndex] = updatedTask;
     writeTasks(tasks);
     res.json(updatedTask);
@@ -80,6 +115,8 @@ app.delete('/tasks/:id', (req, res) => {
     writeTasks(filteredTasks);
     res.sendStatus(204);
 });
+
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
