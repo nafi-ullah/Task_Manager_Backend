@@ -44,15 +44,15 @@ app.get('/tasks/:id', (req, res) => {
     res.json(task);
 });
 
+// hit url /tasks?status=pending or /tasks?status=completed 
+// sort /tasks?sortBy=title or /tasks?sortBy=status
 app.get('/tasks', (req, res) => {
     let tasks = readTasks();
 
-    // Filter tasks based on status
     if (req.query.status) {
         tasks = tasks.filter(task => task.status === req.query.status);
     }
 
-    // Sorting tasks based on title or any other criteria
     if (req.query.sortBy) {
         tasks.sort((a, b) => {
             if (a[req.query.sortBy] < b[req.query.sortBy]) return -1;
