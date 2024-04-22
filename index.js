@@ -61,6 +61,15 @@ app.get('/tasks', (req, res) => {
         });
     }
 
+    if (req.query.search) {
+        const searchQuery = req.query.search.toLowerCase();
+        const filteredTasks = tasks.filter(task =>
+            task.title.toLowerCase().includes(searchQuery) ||
+            task.description.toLowerCase().includes(searchQuery)
+        );
+        return res.json(filteredTasks);
+    }
+
     res.json(tasks);
 });
 
