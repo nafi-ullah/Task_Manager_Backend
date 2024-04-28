@@ -18,8 +18,8 @@ router.get('/', (req, res) => {
 
 // Create a new user
 router.post('/', (req, res) => {
-  const { name, email, password } = req.body;
-  db.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, password], (err, result) => {
+  const { name, email, password,role } = req.body;
+  db.query('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', [name, email, password, role], (err, result) => {
     if (err) {
       console.error('Error creating user:', err);
       return res.status(500).json({ error: 'Internal Server Error' });
@@ -30,9 +30,9 @@ router.post('/', (req, res) => {
 
 // Update a user
 router.put('/:userid', (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   const userId = req.params.userid;
-  db.query('UPDATE users SET name = ?, email = ?, password = ? WHERE userid = ?', [name, email, password, userId], (err, result) => {
+  db.query('UPDATE users SET name = ?, email = ?, password = ?, role = ? WHERE userid = ?', [name, email, password, role, userId], (err, result) => {
     if (err) {
       console.error('Error updating user:', err);
       return res.status(500).json({ error: 'Internal Server Error' });
@@ -54,3 +54,11 @@ router.delete('/:userid', (req, res) => {
 });
 
 module.exports = router;
+
+
+// {
+//     "name": "rifat",
+//     "email": "rifat@gmail.com",
+//     "password": "pending",
+//     "role": "admin"
+// }

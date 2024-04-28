@@ -57,15 +57,51 @@ router.get('/tasks', (req, res) => {
     });
 });
 
+// GET /tasks?userid=123&status=completed&sortBy=title&search=meeting
+router.get('/usertasks', (req, res) => {
+    const userId = req.query.userid; 
+    if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    let sql = 'SELECT * FROM tasks WHERE userid = ?';
+    const { status, sortBy, search } = req.query;
+    const params = [userId];
+
+    if (status) {
+        sql += ' AND status = ?';
+        params.push(status);
+    }
+
+    if (search) {
+        const searchQuery = `%${search}%`;
+        sql += ' AND (title LIKE ? OR description LIKE ?)';
+        params.push(searchQuery, searchQuery);
+    }
+
+    if (sortBy) {
+        sql += ` ORDER BY ${sortBy}`;
+    }
+
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            console.error('Error fetching tasks:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        res.json(result);
+    });
+});
+
+
 
 
 router.post('/tasks', (req, res) => {
     // Extract task data from request body
-    const { title, description , status} = req.body;
+    const { userid, title, description, status } = req.body;
   
     // Insert task into "tasks" table
-    const insertTaskQuery = 'INSERT INTO tasks (title, description, status) VALUES (?, ?, ?)';
-    db.query(insertTaskQuery, [title, description, status], (err, result) => {
+    const insertTaskQuery = 'INSERT INTO tasks (userid, title, description, status) VALUES (?, ?, ?, ?)';
+    db.query(insertTaskQuery, [userid, title, description, status], (err, result) => {
       if (err) {
         console.error('Error adding task:', err);
         res.status(500).json({ error: 'Failed to add task' });
@@ -74,7 +110,8 @@ router.post('/tasks', (req, res) => {
         res.status(201).json({ message: 'Task added successfully' });
       }
     });
-  });
+});
+
 
 router.put('/tasks/:id', (req, res) => {
     const taskId = req.params.id;
