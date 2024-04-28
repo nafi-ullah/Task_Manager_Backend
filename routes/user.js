@@ -55,43 +55,7 @@ router.post('/register', [
   });
 
 
-//login
-// router.post('/login', async (req, res) => {
-//     const { email,password } = req.body;
-  
-//     try {
-//       // Check if user exists
-//       const user = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-//       if (!user || user.length === 0) {
-//         return res.status(400).json({ error: 'Invalid credentials' });
-//       }
-//       console.log({user});
-  
-//       const userData = user[0];
-  
-//       // Check password
-//       const isMatch = await bcrypt.compare(password, userData.password);
-//       if (!isMatch) {
-//         return res.status(400).json({ error: 'Invalid credentials' });
-//       }
-  
-//       // Generate JWT token
-//       const payload = {
-//         user: {
-//           id: userData.userid
-//         }
-//       };
-//       res.json({nooo});
-  
-//       jwt.sign(payload, 'mytoken', { expiresIn: '1h' }, (err, token) => {
-//         if (err) throw err;
-//         res.json({ token });
-//       });
-//     } catch (err) {
-//       console.error('Error logging in user:', err);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//     }
-//   });
+
 
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
@@ -109,7 +73,18 @@ router.post('/login', (req, res) => {
               res.status(500).send('Error logging in');
             } else {
               if (isMatch) {
-                res.status(200).json({ message: 'Login successful', user: result[0] });
+                      const payload = {
+                              user: {
+                                      id: result[0].userid,
+                                      role: result[0].role
+                                    }};
+  
+                    jwt.sign(payload, 'mytoken', { expiresIn: '1h' }, (err, token) => {
+                        if (err) throw err;
+                        res.json({ message: 'Login successful', token });
+                    });
+
+                // res.status(200).json({ message: 'Login successful', user: result[0] });
               } else {
                 res.status(400).json({ error: 'Invalid credentials' });
               }
