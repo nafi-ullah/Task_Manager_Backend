@@ -3,23 +3,7 @@ const db = require('../DB/dbconnect');
 
 const router = express.Router();
 
-const createUserTable = `
-  CREATE TABLE IF NOT EXISTS users (
-    userid INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(200) ,
-    email VARCHAR(200),
-    password VARCHAR(200)
-  )
-`;
 
-// Create user table if not exists
-db.query(createUserTable, (err) => {
-  if (err) {
-    console.error('Error creating "users" table:', err);
-  } else {
-    console.log('"users" table created (or already exists)');
-  }
-});
 
 // Get all users
 router.get('/', (req, res) => {

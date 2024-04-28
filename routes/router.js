@@ -3,25 +3,6 @@ const db = require('../DB/dbconnect');
 
 const router = express.Router();
 
-const createTasksTable = `
-  CREATE TABLE IF NOT EXISTS tasks (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    userid INT,
-    title VARCHAR(255) ,
-    description VARCHAR(300),
-    status VARCHAR(50),
-    FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
-  )
-`;
-
-db.query(createTasksTable, (err) => {
-  if (err) {
-    console.error('Error creating "tasks" table:', err);
-  } else {
-    console.log('"tasks" table created (or already exists)');
-  }
-});
-
 
 router.get('/tasks/:id', (req, res) => {
     const taskId = req.params.id;
