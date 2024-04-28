@@ -6,9 +6,11 @@ const router = express.Router();
 const createTasksTable = `
   CREATE TABLE IF NOT EXISTS tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    userid INT,
     title VARCHAR(255) ,
     description VARCHAR(300),
-    status VARCHAR(50)
+    status VARCHAR(50),
+    FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
   )
 `;
 
@@ -36,9 +38,15 @@ router.get('/tasks/:id', (req, res) => {
     });
 });
 
+//http://localhost:3000/tasks?status=complete
+//http://localhost:3000/tasks
+//http://localhost:3000/tasks?sortBy=title
+//http://localhost:3000/tasks?search=porte
+
 router.get('/tasks', (req, res) => {
     let sql = 'SELECT * FROM tasks';
     const { status, sortBy, search } = req.query;
+    let conditions = [];
 
     if (status) {
         sql += ` WHERE status = '${status}'`;
@@ -48,18 +56,22 @@ router.get('/tasks', (req, res) => {
         sql += ` ORDER BY ${sortBy}`;
     }
 
+    if (search) {
+        const searchQuery = `%${search}%`;
+        conditions.push(`(title LIKE '${searchQuery}' OR description LIKE '${searchQuery}')`);
+    }
+
+    if (conditions.length > 0) {
+        sql += ' WHERE ' + conditions.join(' AND ');
+    }
+
+
     db.query(sql, (err, result) => {
         if (err) {
             console.error('Error fetching tasks:', err);
             return res.status(500).json({ error: 'Internal Server Error' });
         }
-        if (search) {
-            const searchQuery = `%${search}%`;
-            result = result.filter(task =>
-                task.title.toLowerCase().includes(searchQuery) ||
-                task.description.toLowerCase().includes(searchQuery)
-            );
-        }
+       
         res.json(result);
     });
 });

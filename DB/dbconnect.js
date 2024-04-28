@@ -16,3 +16,7 @@ db.connect((err) => {
 });
 
 module.exports = db;
+
+
+// sudo /opt/lampp/lampp start
+// sudo /opt/lampp/manager-linux-x64.run
