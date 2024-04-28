@@ -20,7 +20,7 @@ router.get('/', (req, res) => {
 });
 
 // Create a new user
-// Create a new user
+
 router.post('/register', [
     check('name', 'Name is required').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),
@@ -41,8 +41,8 @@ router.post('/register', [
       }
   
       // Hash password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+     // const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, 8);
   
       // Insert user into database
       await db.query('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', [name, email, hashedPassword, role]);
@@ -55,41 +55,74 @@ router.post('/register', [
   });
 
 
-// login
-  router.post('/login', async (req, res) => {
+//login
+// router.post('/login', async (req, res) => {
+//     const { email,password } = req.body;
+  
+//     try {
+//       // Check if user exists
+//       const user = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+//       if (!user || user.length === 0) {
+//         return res.status(400).json({ error: 'Invalid credentials' });
+//       }
+//       console.log({user});
+  
+//       const userData = user[0];
+  
+//       // Check password
+//       const isMatch = await bcrypt.compare(password, userData.password);
+//       if (!isMatch) {
+//         return res.status(400).json({ error: 'Invalid credentials' });
+//       }
+  
+//       // Generate JWT token
+//       const payload = {
+//         user: {
+//           id: userData.userid
+//         }
+//       };
+//       res.json({nooo});
+  
+//       jwt.sign(payload, 'mytoken', { expiresIn: '1h' }, (err, token) => {
+//         if (err) throw err;
+//         res.json({ token });
+//       });
+//     } catch (err) {
+//       console.error('Error logging in user:', err);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     }
+//   });
+
+router.post('/login', (req, res) => {
     const { email, password } = req.body;
+    const getUserQuery = 'SELECT * FROM users WHERE email = ? ';
   
-    try {
-      // Check if user exists
-      let user = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-      if (user.length === 0) {
-        return res.status(400).json({ error: 'Invalid credentials' });
-      }
-  
-      user = user[0];
-  
-      // Check password
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ error: 'Invalid credentials' });
-      }
-  
-      // Generate JWT token
-      const payload = {
-        user: {
-          id: user.userid
+    db.query(getUserQuery, [email], (err, result) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send('Error logging in');
+      } else {
+        if (result.length > 0) {
+          bcrypt.compare(password, result[0].password, (err, isMatch) => {
+            if (err) {
+              console.log(err);
+              res.status(500).send('Error logging in');
+            } else {
+              if (isMatch) {
+                res.status(200).json({ message: 'Login successful', user: result[0] });
+              } else {
+                res.status(400).json({ error: 'Invalid credentials' });
+              }
+            }
+          });
+        } else {
+          res.status(401).send('Invalid email or password');
         }
-      };
-  
-      jwt.sign(payload, 'mytoken', { expiresIn: '1h' }, (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      });
-    } catch (err) {
-      console.error('Error logging in user:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
+      }
+    });
   });
+  
+  
 
 // Update a user
 router.put('/:userid', (req, res) => {
