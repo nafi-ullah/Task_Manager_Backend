@@ -40,8 +40,6 @@ router.post('/register', [
         return res.status(400).json({ error: 'User already exists' });
       }
   
-      // Hash password
-     // const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, 8);
   
       // Insert user into database
@@ -75,16 +73,15 @@ router.post('/login', (req, res) => {
               if (isMatch) {
                       const payload = {
                               user: {
-                                      id: result[0].userid,
-                                      role: result[0].role
+                                     userid: result[0].userid,
+                                     // role: result[0].role
                                     }};
   
-                    jwt.sign(payload, 'mytoken', { expiresIn: '1h' }, (err, token) => {
+                    jwt.sign(payload, 'mytokenkey', { expiresIn: '1h' }, (err, token) => {
                         if (err) throw err;
                         res.json({ message: 'Login successful', token });
                     });
 
-                // res.status(200).json({ message: 'Login successful', user: result[0] });
               } else {
                 res.status(400).json({ error: 'Invalid credentials' });
               }
