@@ -14,28 +14,33 @@ const admin = async (req, res, next) => {
         .json({ msg: "Token verification failed, authorization denied." });
 
 
-
-        const sql = 'SELECT * FROM users WHERE userid = ?';
         const userid = verified.userid;
-        db.query(sql, [userid], (err, result) => {
-            if (err) {
-                console.error('Error fetching task:', err);
-                return res.status(500).json({ error: 'Internal Server Error' });
-            }
-            if (result.length === 0) {
-                return res.status(404).json({ error: 'User not found' });
-            }
+        const role = verified.role;
+        if (role === "user" ) {
+          return res.status(401).json({ msg: "You are not an admin!" });
+        }
+        next();
+
+        //  const sql = 'SELECT * FROM users WHERE userid = ?';
+        // db.query(sql, [userid], (err, result) => {
+        //     if (err) {
+        //         console.error('Error fetching task:', err);
+        //         return res.status(500).json({ error: 'Internal Server Error' });
+        //     }
+        //     if (result.length === 0) {
+        //         return res.status(404).json({ error: 'User not found' });
+        //     }
 
 
-            if (result[0].role == "user" ) {
-                return res.status(401).json({ msg: "You are not an admin!" });
-              }
-              req.user = verified.id;
-              req.token = token;
-              next();
+        //     if (result[0].role == "user" ) {
+        //         return res.status(401).json({ msg: "You are not an admin!" });
+        //       }
+        //       req.user = verified.id;
+        //       req.token = token;
+        //       next();
 
-            res.json(result[0]);
-        });
+        //     res.json(result[0]);
+        // });
 
   } catch (err) {
     res.status(500).json({ error: err.message });

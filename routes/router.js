@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../DB/dbconnect');
+const auth = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -24,7 +25,7 @@ router.get('/tasks/:id', (req, res) => {
 //http://localhost:3000/tasks?sortBy=title
 //http://localhost:3000/tasks?search=porte
 
-router.get('/tasks', (req, res) => {
+router.get('/tasks',auth, (req, res) => {
     let sql = 'SELECT * FROM tasks';
     const { status, sortBy, search } = req.query;
     let conditions = [];

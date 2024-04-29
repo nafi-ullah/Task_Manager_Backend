@@ -74,7 +74,7 @@ router.post('/login', (req, res) => {
                       const payload = {
                               user: {
                                      userid: result[0].userid,
-                                     // role: result[0].role
+                                      role: result[0].role
                                     }};
   
                     jwt.sign(payload, 'mytokenkey', { expiresIn: '1h' }, (err, token) => {
