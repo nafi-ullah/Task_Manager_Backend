@@ -110,6 +110,19 @@ router.put('/:userid',auth, (req, res) => {
   });
 });
 
+// Update a user owns profile
+router.put('/profile/:userid',auth, (req, res) => {
+  const { name, email, password } = req.body;
+  const userId = req.params.userid;
+  db.query('UPDATE users SET name = ?, email = ?, password = ? WHERE userid = ?', [name, email, password, userId], (err, result) => {
+    if (err) {
+      console.error('Error updating user:', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+    res.json({ message: 'User updated successfully' });
+  });
+});
+
 // Delete a user
 router.delete('/:userid',auth, (req, res) => {
   const userId = req.params.userid;
