@@ -1,11 +1,12 @@
 const express = require('express');
 const db = require('../DB/dbconnect');
 const auth = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
 
 const router = express.Router();
 
 
-router.get('/tasks/:id', (req, res) => {
+router.get('/tasks/:id',auth, (req, res) => {
     const taskId = req.params.id;
     const sql = 'SELECT * FROM tasks WHERE id = ?';
     db.query(sql, [taskId], (err, result) => {
@@ -25,7 +26,7 @@ router.get('/tasks/:id', (req, res) => {
 //http://localhost:3000/tasks?sortBy=title
 //http://localhost:3000/tasks?search=porte
 
-router.get('/tasks',auth, (req, res) => {
+router.get('/tasks',admin, (req, res) => {
     let sql = 'SELECT * FROM tasks';
     const { status, sortBy, search } = req.query;
     let conditions = [];
@@ -59,7 +60,7 @@ router.get('/tasks',auth, (req, res) => {
 });
 
 // GET /tasks?userid=123&status=completed&sortBy=title&search=meeting
-router.get('/usertasks', (req, res) => {
+router.get('/usertasks',auth, (req, res) => {
     const userId = req.query.userid; 
     if (!userId) {
         return res.status(400).json({ error: 'User ID is required' });
@@ -96,7 +97,7 @@ router.get('/usertasks', (req, res) => {
 
 
 
-router.post('/tasks', (req, res) => {
+router.post('/tasks',auth, (req, res) => {
     // Extract task data from request body
     const { userid, title, description, status } = req.body;
   
@@ -114,7 +115,7 @@ router.post('/tasks', (req, res) => {
 });
 
 
-router.put('/tasks/:id', (req, res) => {
+router.put('/tasks/:id',auth, (req, res) => {
     const taskId = req.params.id;
     const { title, description, status } = req.body;
     const sql = 'UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?';
@@ -135,7 +136,7 @@ router.put('/tasks/:id', (req, res) => {
     });
 });
 
-router.delete('/tasks/:id', (req, res) => {
+router.delete('/tasks/:id',auth, (req, res) => {
     const taskId = req.params.id;
     const sql = 'DELETE FROM tasks WHERE id = ?';
     db.query(sql, [taskId], (err, result) => {

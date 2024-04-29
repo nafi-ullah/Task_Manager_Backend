@@ -2,6 +2,8 @@ const express = require('express');
 const db = require('../DB/dbconnect');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const auth = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
 const { check, validationResult } = require('express-validator');
 
 const router = express.Router();
@@ -9,7 +11,7 @@ const router = express.Router();
 
 
 // Get all users
-router.get('/', (req, res) => {
+router.get('/',admin, (req, res) => {
   db.query('SELECT * FROM users', (err, result) => {
     if (err) {
       console.error('Error fetching users:', err);
@@ -34,7 +36,7 @@ router.post('/register', [
     const { name, email, password, role } = req.body;
   
     try {
-      // Check if user exists
+     
       let user = await db.query('SELECT * FROM users WHERE email = ?', [email]);
       if (user.length > 0) {
         return res.status(400).json({ error: 'User already exists' });
@@ -42,7 +44,6 @@ router.post('/register', [
   
       const hashedPassword = await bcrypt.hash(password, 8);
   
-      // Insert user into database
       await db.query('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', [name, email, hashedPassword, role]);
   
       res.status(201).json({ message: 'User created successfully' });
@@ -97,7 +98,7 @@ router.post('/login', (req, res) => {
   
 
 // Update a user
-router.put('/:userid', (req, res) => {
+router.put('/:userid',auth, (req, res) => {
   const { name, email, password, role } = req.body;
   const userId = req.params.userid;
   db.query('UPDATE users SET name = ?, email = ?, password = ?, role = ? WHERE userid = ?', [name, email, password, role, userId], (err, result) => {
@@ -110,7 +111,7 @@ router.put('/:userid', (req, res) => {
 });
 
 // Delete a user
-router.delete('/:userid', (req, res) => {
+router.delete('/:userid',auth, (req, res) => {
   const userId = req.params.userid;
   db.query('DELETE FROM users WHERE userid = ?', [userId], (err, result) => {
     if (err) {
